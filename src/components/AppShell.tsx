@@ -2,6 +2,44 @@ import { NavLink, Outlet } from "react-router-dom";
 import { ClipboardCheck, History as HistoryIcon, Settings as SettingsIcon } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { UpdateBanner } from "./UpdateBanner";
+import { useEntries } from "@/lib/vot-hooks";
+import { effectiveTimestamp } from "@/lib/vot-storage";
+
+const DaysSinceBadge = () => {
+  const entries = useEntries();
+  if (entries.length === 0) {
+    return (
+      <div className="ml-auto flex flex-col items-end leading-tight" aria-label="No checks yet">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
+        <span className="text-sm font-semibold font-display text-muted-foreground">—</span>
+      </div>
+    );
+  }
+  const latest = entries.reduce((acc, e) =>
+    new Date(effectiveTimestamp(e)).getTime() > new Date(effectiveTimestamp(acc)).getTime() ? e : acc,
+  );
+  const days = Math.floor(
+    (Date.now() - new Date(effectiveTimestamp(latest)).getTime()) / 86_400_000,
+  );
+  const tone =
+    days <= 24
+      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+      : days <= 30
+      ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+      : "bg-destructive/15 text-destructive border-destructive/30";
+  return (
+    <div
+      className="ml-auto flex flex-col items-end leading-tight"
+      aria-label={`${days} day${days === 1 ? "" : "s"} since last VOT check`}
+      title={days > 30 ? "Beyond 30 days — VOR cannot be used for IFR flight (14 CFR 91.171)" : undefined}
+    >
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
+      <span className={`mt-0.5 px-2 py-0.5 rounded-full border text-sm font-semibold font-display tabular-nums ${tone}`}>
+        {days}d
+      </span>
+    </div>
+  );
+};
 
 const tabs = [
   { to: "/", label: "New Check", icon: ClipboardCheck, end: true },
