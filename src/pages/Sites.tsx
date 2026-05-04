@@ -93,7 +93,7 @@ const Sites = () => {
   const validate = (): string | null => {
     if (!form.method) return "Method is required.";
     if (!form.location.trim()) return "Location is required.";
-    if (!FREQ_RE.test(form.frequency.trim())) return "Frequency must be in the form XXX.XX.";
+    if (!FREQ_RE.test(form.frequency.trim())) return "Frequency must be in the form XXX.X or XXX.XX.";
     const az = Number(form.azimuth);
     if (!Number.isInteger(az) || az < 0 || az > 359) return "Azimuth must be an integer 0–359.";
     if (form.note.length > NOTE_MAX) return `Note must be ≤ ${NOTE_MAX} characters.`;
