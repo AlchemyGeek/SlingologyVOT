@@ -16,8 +16,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { addEntry, newId, type VotEntry } from "@/lib/vot-storage";
+import {
+  addEntry,
+  newId,
+  VOT_METHODS,
+  evaluateEntry,
+  methodLabel,
+  methodTolerance,
+  type VotEntry,
+  type VotMethod,
+} from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
 
 const fmtFull = (iso: string) =>
