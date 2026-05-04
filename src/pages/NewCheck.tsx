@@ -92,6 +92,7 @@ const NewCheck = () => {
       userTimestamp: userTs,
       timeOverridden: !!userTs && userTs !== autoTs,
       location: location.trim(),
+      method: method || undefined,
       deviationDeg: Math.round(deviationNum * 10) / 10,
       notes: notes.trim() || undefined,
       signed: true,
@@ -102,6 +103,7 @@ const NewCheck = () => {
     setConfirmSignOpen(false);
     toast({ title: "Entry signed and saved" });
     setLocation("");
+    setMethod("");
     setDeviation("");
     setNotes("");
     setUserTs(undefined);
