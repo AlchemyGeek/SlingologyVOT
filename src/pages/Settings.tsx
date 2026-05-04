@@ -61,10 +61,13 @@ const Settings = () => {
 
   const confirmImport = () => {
     if (!pending) return;
-    const added = mergeEntries(pending);
+    const addedEntries = mergeEntries(pending.entries);
+    const addedSites = mergeSites(pending.sites);
     setPending(null);
-    if (added > 0) toast({ title: `${added} new ${added === 1 ? "entry" : "entries"} imported.` });
-    else toast({ title: "No new entries found." });
+    const parts: string[] = [];
+    if (addedEntries) parts.push(`${addedEntries} ${addedEntries === 1 ? "entry" : "entries"}`);
+    if (addedSites) parts.push(`${addedSites} ${addedSites === 1 ? "site" : "sites"}`);
+    toast({ title: parts.length ? `Imported ${parts.join(" and ")}.` : "No new items found." });
   };
 
   return (
