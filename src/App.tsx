@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShell } from "@/components/AppShell";
 import NewCheck from "./pages/NewCheck";
 import History from "./pages/History";
+import Sites from "./pages/Sites";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route element={<AppShell />}>
             <Route path="/" element={<NewCheck />} />
             <Route path="/history" element={<History />} />
+            <Route path="/sites" element={<Sites />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

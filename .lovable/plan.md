@@ -1,44 +1,59 @@
-## Add "Method" field with PASS/FAIL evaluation
+## Add "Sites" section (CRUD list of test locations)
 
-Add a required Method dropdown after Location on the New Check screen, and use the method's FAR 91.171 tolerance to evaluate each entry as PASS or FAIL based on the entered deviation.
+A new tab between **History** and **Settings** where pilots can record VOT test sites they've discovered. Each site is editable and stored locally (same pattern as entries).
 
-### Methods (per FAR 91.171) and tolerances
-- VOT — ±4°
-- Certified repair station test signal — ±4°
-- Designated surface (ground) checkpoint — ±4°
-- Designated airborne checkpoint — ±6°
-- Dual VOR system check — ±4° (difference between receivers)
+### Site fields
+- **Method** — same dropdown as New Check (`VOT_METHODS` from `vot-storage.ts`)
+- **Location** — free text (e.g. "KPAE — Run-up area Bravo")
+- **Frequency** — masked input in the form `XXX.XX` (e.g. `108.00`–`117.95`); accept comma or dot, store as number string `XXX.XX`
+- **Azimuth** — degrees `0–359` (integer)
+- **Note** — short text, max 100 characters
 
-Stored as a stable code (`vot` | `repair_station` | `ground_checkpoint` | `airborne_checkpoint` | `dual_vor`) with a lookup table mapping code → label + tolerance, so wording/tolerances can be edited in one place.
+### Data model — `src/lib/vot-storage.ts`
+Add:
+```ts
+export interface VotSite {
+  id: string;
+  method: VotMethod;
+  location: string;
+  frequency: string;   // "112.30"
+  azimuth: number;     // 0..359
+  note?: string;       // <=100 chars
+  createdAt: string;
+  updatedAt: string;
+}
+```
+Add helpers mirroring entries: `getSites()`, `saveSites()`, `addSite()`, `updateSite(id, patch)`, `deleteSite(id)` using key `vot.sites` and event `vot:sites-changed`.
 
-### PASS/FAIL rule
-- `result = |deviationDeg| <= tolerance ? "PASS" : "FAIL"`.
-- Computed from stored `method` + `deviationDeg` at render/export time (not stored), so changing the lookup table re-evaluates legacy entries correctly.
-- Entries with no method (legacy) show "—" instead of PASS/FAIL.
+### Hook — `src/lib/vot-hooks.ts`
+Add `useSites()` mirroring `useEntries()`.
 
-### Data model (`src/lib/vot-storage.ts`)
-- Add `VotMethod` union and a `VOT_METHODS` array `[{ code, label, tolerance }]`.
-- Add `method?: VotMethod` to `VotEntry` (optional so older saved entries still load; UI requires it for new entries).
-- Add helpers: `methodLabel(code)`, `methodTolerance(code)`, `evaluateEntry(entry): "PASS" | "FAIL" | null`.
+### Routing — `src/App.tsx`
+Add `<Route path="/sites" element={<Sites />} />`.
 
-### New Check screen (`src/pages/NewCheck.tsx`)
-- Add a shadcn `<Select>` immediately after Location, labeled "Method *", placeholder "Select check method".
-- Add to `canSave`: method must be selected.
-- Under the deviation display, once a method is chosen show: "Tolerance: ±4°" (or ±6°). For Dual VOR: "Enter the difference between receivers (±4°)."
-- Live PASS/FAIL chip next to the deviation number once both method and a valid deviation are present (green for PASS, red for FAIL using existing destructive token).
-- Sign confirmation dialog summary includes Method and the resulting PASS/FAIL.
-- Persist `method` on the saved `VotEntry` (no stored result field).
+### Nav — `src/components/AppShell.tsx`
+Insert a new tab between History and Settings (icon: `MapPin` from lucide). Grid becomes `grid-cols-4`.
 
-### History (`src/pages/History.tsx`)
-- Each row shows a small PASS/FAIL badge next to the deviation (green/red).
-- Sub-line shows `<Method label> · ±<tolerance>°`. Omit for legacy entries without a method.
-
-### Exports (`src/lib/vot-exports.ts`)
-- Excel: insert columns "Method" and "Result" between Location and Deviation/after Deviation respectively. Adjust column widths. No conditional formatting (keep it simple, just text "PASS"/"FAIL").
-- Plain text: add `Method:    <label>` after Location and `Result:    PASS|FAIL` after Deviation.
-- JSON backup: automatic (`method` serialized; result is derived, not stored).
-- Import: unchanged.
+### New page — `src/pages/Sites.tsx`
+- Header: "Sites" with an "Add site" button (top-right) opening a Dialog.
+- Empty state: short explainer ("Save the test locations you've found — VOTs, surface checkpoints, etc.") with a primary "Add your first site" button.
+- List: cards showing Location (title), Method label as a chip, `Freq 112.30 · Az 045°`, and the note if present. Trailing buttons: Edit (pencil) and Delete (trash, with AlertDialog confirm).
+- Add/Edit dialog: same form fields, validates:
+  - Method required
+  - Location required (trimmed)
+  - Frequency matches `^\d{3}[.,]\d{2}$`, normalized to dot
+  - Azimuth integer `0–359`
+  - Note ≤100 chars (live counter)
+- Sort: most recently updated first.
 
 ### Out of scope
-- No blocking on FAIL — pilot can still sign a FAIL entry (it's a record of what happened).
-- No reminders, no aggregate pass-rate stats.
+- No link from sites to auto-fill New Check (can be a follow-up).
+- No import/export of sites in this pass.
+- No favorites/tags.
+
+### Files touched
+- `src/lib/vot-storage.ts` — add types + CRUD
+- `src/lib/vot-hooks.ts` — add `useSites`
+- `src/App.tsx` — add route
+- `src/components/AppShell.tsx` — add tab, switch to 4-column grid
+- `src/pages/Sites.tsx` — new

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEntries, getPilot, type Pilot, type VotEntry } from "./vot-storage";
+import { getEntries, getPilot, getSites, type Pilot, type VotEntry, type VotSite } from "./vot-storage";
 
 export function usePilot(): Pilot | null {
   const [pilot, setPilot] = useState<Pilot | null>(() => getPilot());
@@ -27,4 +27,18 @@ export function useEntries(): VotEntry[] {
     };
   }, []);
   return entries;
+}
+
+export function useSites(): VotSite[] {
+  const [sites, setSites] = useState<VotSite[]>(() => getSites());
+  useEffect(() => {
+    const sync = () => setSites(getSites());
+    window.addEventListener("vot:sites-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("vot:sites-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  return sites;
 }

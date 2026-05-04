@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { ClipboardCheck, History as HistoryIcon, Settings as SettingsIcon } from "lucide-react";
+import { ClipboardCheck, History as HistoryIcon, MapPin, Settings as SettingsIcon } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { UpdateBanner } from "./UpdateBanner";
 import { useEntries } from "@/lib/vot-hooks";
@@ -44,6 +44,7 @@ const DaysSinceBadge = () => {
 const tabs = [
   { to: "/", label: "New Check", icon: ClipboardCheck, end: true },
   { to: "/history", label: "History", icon: HistoryIcon },
+  { to: "/sites", label: "Sites", icon: MapPin },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
@@ -73,7 +74,7 @@ export const AppShell = () => {
         className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur safe-bottom"
         aria-label="Primary"
       >
-        <div className="max-w-2xl mx-auto grid grid-cols-3">
+        <div className="max-w-2xl mx-auto grid grid-cols-4">
           {tabs.map((t) => {
             const Icon = t.icon;
             return (
