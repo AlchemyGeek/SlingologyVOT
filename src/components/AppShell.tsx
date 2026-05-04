@@ -57,6 +57,7 @@ export const AppShell = () => {
             <span className="text-sm font-semibold tracking-wide text-foreground">SLINGOLOGY</span>
             <span className="text-xs text-muted-foreground -mt-0.5">VOT · VOR Check Logger</span>
           </div>
+          <DaysSinceBadge />
         </div>
       </header>
 
