@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { effectiveTimestamp, type VotEntry } from "./vot-storage";
+import { effectiveTimestamp, evaluateEntry, methodLabel, type VotEntry } from "./vot-storage";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
