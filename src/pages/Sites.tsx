@@ -37,7 +37,12 @@ import {
 import { useSites } from "@/lib/vot-hooks";
 
 const NOTE_MAX = 100;
-const FREQ_RE = /^\d{3}[.,]\d{2}$/;
+const FREQ_RE = /^\d{3}[.,]\d{1,2}$/;
+
+const normalizeFreq = (raw: string) => {
+  const [whole, frac = ""] = raw.trim().replace(",", ".").split(".");
+  return `${whole}.${(frac + "00").slice(0, 2)}`;
+};
 
 interface FormState {
   method: VotMethod | "";
@@ -88,7 +93,7 @@ const Sites = () => {
   const validate = (): string | null => {
     if (!form.method) return "Method is required.";
     if (!form.location.trim()) return "Location is required.";
-    if (!FREQ_RE.test(form.frequency.trim())) return "Frequency must be in the form XXX.XX.";
+    if (!FREQ_RE.test(form.frequency.trim())) return "Frequency must be in the form XXX.X or XXX.XX.";
     const az = Number(form.azimuth);
     if (!Number.isInteger(az) || az < 0 || az > 359) return "Azimuth must be an integer 0–359.";
     if (form.note.length > NOTE_MAX) return `Note must be ≤ ${NOTE_MAX} characters.`;
@@ -102,7 +107,7 @@ const Sites = () => {
       return;
     }
     const now = new Date().toISOString();
-    const frequency = form.frequency.trim().replace(",", ".");
+    const frequency = normalizeFreq(form.frequency);
     const azimuth = Number(form.azimuth);
     const note = form.note.trim() || undefined;
     if (editingId) {
