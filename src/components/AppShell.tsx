@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { ClipboardCheck, History as HistoryIcon, Settings as SettingsIcon } from "lucide-react";
+import { ClipboardCheck, History as HistoryIcon, MapPin, Settings as SettingsIcon } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { UpdateBanner } from "./UpdateBanner";
 import { useEntries } from "@/lib/vot-hooks";
