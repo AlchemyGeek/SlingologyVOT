@@ -205,6 +205,23 @@ const NewCheck = () => {
               ? `${deviationNum > 0 ? "+" : ""}${deviationNum.toFixed(1)}°`
               : "—"}
           </div>
+          {tolerance !== null && (
+            <div className="mt-1 flex items-center justify-center gap-2 text-xs">
+              <span className="text-muted-foreground">Tolerance ±{tolerance}°</span>
+              {result && (
+                <span
+                  className={
+                    "px-2 py-0.5 rounded-full font-semibold tracking-wide " +
+                    (result === "PASS"
+                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                      : "bg-destructive/15 text-destructive border border-destructive/30")
+                  }
+                >
+                  {result}
+                </span>
+              )}
+            </div>
+          )}
           <div className="mt-3 flex items-center gap-3">
             <Input
               id="dev"
