@@ -143,10 +143,10 @@ const Settings = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Import {pending?.length ?? 0} entries from this file?
+              Import {pending?.entries.length ?? 0} entries and {pending?.sites.length ?? 0} sites?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Existing entries will not be overwritten.
+              Existing items with the same ID will not be overwritten.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
