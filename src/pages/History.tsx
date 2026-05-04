@@ -90,6 +90,7 @@ const HistoryRow = ({ e, onDelete }: { e: VotEntry; onDelete: (id: string) => vo
 const History = () => {
   const entries = useEntries();
   const pilot = usePilot();
+  const sites = useSites();
   const [exportOpen, setExportOpen] = useState(false);
 
   const sorted = useMemo(
@@ -103,9 +104,9 @@ const History = () => {
   );
 
   const onExport = (kind: "xlsx" | "txt" | "json") => {
-    if (kind === "xlsx") exportXlsx(sorted, pilot?.certificateNumber);
-    if (kind === "txt") exportTxt(sorted);
-    if (kind === "json") exportJson(sorted);
+    if (kind === "xlsx") exportXlsx(sorted, pilot?.certificateNumber, sites);
+    if (kind === "txt") exportTxt(sorted, sites);
+    if (kind === "json") exportJson(sorted, sites);
     setExportOpen(false);
   };
 
