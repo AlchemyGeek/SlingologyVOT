@@ -300,11 +300,24 @@ const NewCheck = () => {
                 <div>This record will be locked after saving.</div>
                 <div className="rounded-md bg-muted p-3 space-y-1 font-display">
                   <div>Location: <span className="text-foreground">{location}</span></div>
+                  <div>Method: <span className="text-foreground">{methodLabel(method as VotMethod) || "—"}</span></div>
                   <div>
                     Deviation:{" "}
                     <span className="text-accent">
                       {deviationNum !== null ? `${deviationNum > 0 ? "+" : ""}${deviationNum.toFixed(1)}°` : "—"}
                     </span>
+                    {result && (
+                      <span
+                        className={
+                          "ml-2 px-2 py-0.5 rounded-full text-xs " +
+                          (result === "PASS"
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-destructive/15 text-destructive")
+                        }
+                      >
+                        {result}
+                      </span>
+                    )}
                   </div>
                   <div>Time: <span className="text-foreground">{fmtFull(effectiveTs)}</span></div>
                 </div>
