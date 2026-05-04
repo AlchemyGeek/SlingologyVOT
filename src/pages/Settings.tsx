@@ -14,10 +14,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { mergeEntries, savePilot } from "@/lib/vot-storage";
+import { mergeEntries, mergeSites, savePilot } from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
-import { parseImportFile } from "@/lib/vot-exports";
-import type { VotEntry } from "@/lib/vot-storage";
+import { parseImportFile, type ImportPayload } from "@/lib/vot-exports";
 
 const Settings = () => {
   const pilot = usePilot();
@@ -26,7 +25,7 @@ const Settings = () => {
   const [savedHint, setSavedHint] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [pending, setPending] = useState<VotEntry[] | null>(null);
+  const [pending, setPending] = useState<ImportPayload | null>(null);
 
   useEffect(() => {
     setFullName(pilot?.fullName ?? "");
@@ -62,10 +61,13 @@ const Settings = () => {
 
   const confirmImport = () => {
     if (!pending) return;
-    const added = mergeEntries(pending);
+    const addedEntries = mergeEntries(pending.entries);
+    const addedSites = mergeSites(pending.sites);
     setPending(null);
-    if (added > 0) toast({ title: `${added} new ${added === 1 ? "entry" : "entries"} imported.` });
-    else toast({ title: "No new entries found." });
+    const parts: string[] = [];
+    if (addedEntries) parts.push(`${addedEntries} ${addedEntries === 1 ? "entry" : "entries"}`);
+    if (addedSites) parts.push(`${addedSites} ${addedSites === 1 ? "site" : "sites"}`);
+    toast({ title: parts.length ? `Imported ${parts.join(" and ")}.` : "No new items found." });
   };
 
   return (
@@ -141,10 +143,10 @@ const Settings = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Import {pending?.length ?? 0} entries from this file?
+              Import {pending?.entries.length ?? 0} entries and {pending?.sites.length ?? 0} sites?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Existing entries will not be overwritten.
+              Existing items with the same ID will not be overwritten.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

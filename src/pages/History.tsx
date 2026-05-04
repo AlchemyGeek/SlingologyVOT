@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useEntries, usePilot } from "@/lib/vot-hooks";
+import { useEntries, usePilot, useSites } from "@/lib/vot-hooks";
 import { deleteEntry, effectiveTimestamp, evaluateEntry, methodLabel, methodTolerance, type VotEntry } from "@/lib/vot-storage";
 import { exportJson, exportTxt, exportXlsx } from "@/lib/vot-exports";
 
@@ -90,6 +90,7 @@ const HistoryRow = ({ e, onDelete }: { e: VotEntry; onDelete: (id: string) => vo
 const History = () => {
   const entries = useEntries();
   const pilot = usePilot();
+  const sites = useSites();
   const [exportOpen, setExportOpen] = useState(false);
 
   const sorted = useMemo(
@@ -103,9 +104,9 @@ const History = () => {
   );
 
   const onExport = (kind: "xlsx" | "txt" | "json") => {
-    if (kind === "xlsx") exportXlsx(sorted, pilot?.certificateNumber);
-    if (kind === "txt") exportTxt(sorted);
-    if (kind === "json") exportJson(sorted);
+    if (kind === "xlsx") exportXlsx(sorted, pilot?.certificateNumber, sites);
+    if (kind === "txt") exportTxt(sorted, sites);
+    if (kind === "json") exportJson(sorted, sites);
     setExportOpen(false);
   };
 
@@ -115,7 +116,7 @@ const History = () => {
         <h1 className="text-xl font-semibold">History</h1>
         <Sheet open={exportOpen} onOpenChange={setExportOpen}>
           <SheetTrigger asChild>
-            <Button size="sm" variant="outline" disabled={sorted.length === 0}>
+            <Button size="sm" variant="outline" disabled={sorted.length === 0 && sites.length === 0}>
               <Download className="h-4 w-4 mr-1.5" /> Export
             </Button>
           </SheetTrigger>
