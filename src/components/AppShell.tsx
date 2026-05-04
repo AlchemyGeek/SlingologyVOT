@@ -74,7 +74,7 @@ export const AppShell = () => {
         className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur safe-bottom"
         aria-label="Primary"
       >
-        <div className="max-w-2xl mx-auto grid grid-cols-3">
+        <div className="max-w-2xl mx-auto grid grid-cols-4">
           {tabs.map((t) => {
             const Icon = t.icon;
             return (
