@@ -1,5 +1,11 @@
 import * as XLSX from "xlsx";
-import { effectiveTimestamp, evaluateEntry, methodLabel, type VotEntry } from "./vot-storage";
+import {
+  effectiveTimestamp,
+  evaluateEntry,
+  methodLabel,
+  type VotEntry,
+  type VotSite,
+} from "./vot-storage";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -27,7 +33,17 @@ function download(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function exportXlsx(entries: VotEntry[], pilotCert?: string) {
+function boldHeader(ws: XLSX.WorkSheet) {
+  const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const addr = XLSX.utils.encode_cell({ r: 0, c });
+    if (ws[addr]) ws[addr].s = { font: { bold: true } };
+  }
+}
+
+export function exportXlsx(entries: VotEntry[], pilotCert?: string, sites: VotSite[] = []) {
+  const wb = XLSX.utils.book_new();
+
   const rows = entries.map((e) => {
     const ts = effectiveTimestamp(e);
     return {
@@ -44,23 +60,35 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string) {
     };
   });
   const ws = XLSX.utils.json_to_sheet(rows);
-  // Bold header row
-  const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
-  for (let c = range.s.c; c <= range.e.c; c++) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c });
-    if (ws[addr]) ws[addr].s = { font: { bold: true } };
-  }
+  boldHeader(ws);
   ws["!cols"] = [
     { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 28 }, { wch: 14 }, { wch: 8 },
     { wch: 22 }, { wch: 16 }, { wch: 30 }, { wch: 14 },
   ];
-  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "VOT Log");
+
+  if (sites.length) {
+    const siteRows = sites.map((s) => ({
+      Location: s.location,
+      Method: methodLabel(s.method),
+      Frequency: s.frequency,
+      "Azimuth (°)": s.azimuth,
+      Note: s.note ?? "",
+      "Updated At": fmtDate(s.updatedAt),
+    }));
+    const ws2 = XLSX.utils.json_to_sheet(siteRows);
+    boldHeader(ws2);
+    ws2["!cols"] = [
+      { wch: 28 }, { wch: 28 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 14 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws2, "Sites");
+  }
+
   const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   download(new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `SlingologyVOT-log-${today()}.xlsx`);
 }
 
-export function exportTxt(entries: VotEntry[]) {
+export function exportTxt(entries: VotEntry[], sites: VotSite[] = []) {
   const divider = "——————————————————————————";
   const blocks = entries.map((e) => {
     const ts = effectiveTimestamp(e);
@@ -77,24 +105,55 @@ export function exportTxt(entries: VotEntry[]) {
       divider,
     ].join("\n");
   });
-  const text = blocks.join("\n");
+  let text = blocks.join("\n");
+  if (sites.length) {
+    const siteBlocks = sites.map((s) =>
+      [
+        `SITE — ${s.location}`,
+        `Method:    ${methodLabel(s.method)}`,
+        `Frequency: ${s.frequency}`,
+        `Azimuth:   ${String(s.azimuth).padStart(3, "0")}°`,
+        `Note:      ${s.note?.trim() || "—"}`,
+        divider,
+      ].join("\n"),
+    );
+    text += `\n\n=== SITES ===\n${siteBlocks.join("\n")}`;
+  }
   download(new Blob([text], { type: "text/plain;charset=utf-8" }), `SlingologyVOT-log-${today()}.txt`);
 }
 
-export function exportJson(entries: VotEntry[]) {
-  const text = JSON.stringify({ schema: "SlingologyVOT", version: 1, entries }, null, 2);
+export function exportJson(entries: VotEntry[], sites: VotSite[] = []) {
+  const text = JSON.stringify(
+    { schema: "SlingologyVOT", version: 2, entries, sites },
+    null,
+    2,
+  );
   download(new Blob([text], { type: "application/json" }), `SlingologyVOT-backup-${today()}.json`);
 }
 
-export function parseImportFile(text: string): VotEntry[] {
+export interface ImportPayload {
+  entries: VotEntry[];
+  sites: VotSite[];
+}
+
+export function parseImportFile(text: string): ImportPayload {
   const data = JSON.parse(text);
-  const arr: unknown = Array.isArray(data) ? data : data?.entries;
-  if (!Array.isArray(arr)) throw new Error("Invalid backup file: missing entries array");
-  // Light validation
-  return arr.filter((e): e is VotEntry =>
+  const entriesArr: unknown = Array.isArray(data) ? data : data?.entries;
+  if (!Array.isArray(entriesArr)) throw new Error("Invalid backup file: missing entries array");
+  const entries = entriesArr.filter((e): e is VotEntry =>
     !!e && typeof e === "object" &&
     typeof (e as VotEntry).id === "string" &&
     typeof (e as VotEntry).location === "string" &&
     typeof (e as VotEntry).deviationDeg === "number"
   );
+  const sitesArr: unknown = data?.sites;
+  const sites = Array.isArray(sitesArr)
+    ? sitesArr.filter((s): s is VotSite =>
+        !!s && typeof s === "object" &&
+        typeof (s as VotSite).id === "string" &&
+        typeof (s as VotSite).location === "string" &&
+        typeof (s as VotSite).frequency === "string"
+      )
+    : [];
+  return { entries, sites };
 }
