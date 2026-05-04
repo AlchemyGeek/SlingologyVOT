@@ -44,6 +44,7 @@ const DaysSinceBadge = () => {
 const tabs = [
   { to: "/", label: "New Check", icon: ClipboardCheck, end: true },
   { to: "/history", label: "History", icon: HistoryIcon },
+  { to: "/sites", label: "Sites", icon: MapPin },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
