@@ -51,7 +51,7 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string) {
     if (ws[addr]) ws[addr].s = { font: { bold: true } };
   }
   ws["!cols"] = [
-    { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 14 },
+    { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 28 }, { wch: 14 }, { wch: 8 },
     { wch: 22 }, { wch: 16 }, { wch: 30 }, { wch: 14 },
   ];
   const wb = XLSX.utils.book_new();
