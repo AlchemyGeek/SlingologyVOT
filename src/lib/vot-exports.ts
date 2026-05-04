@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { effectiveTimestamp, type VotEntry } from "./vot-storage";
+import { effectiveTimestamp, evaluateEntry, methodLabel, type VotEntry } from "./vot-storage";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -34,7 +34,9 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string) {
       Date: fmtDate(ts),
       Time: fmtTime(ts),
       Location: e.location,
+      Method: methodLabel(e.method),
       "Deviation (°)": e.deviationDeg,
+      Result: evaluateEntry(e) ?? "",
       "Signed By": e.signedBy,
       "Certificate No.": pilotCert ?? "",
       Notes: e.notes ?? "",
@@ -49,7 +51,7 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string) {
     if (ws[addr]) ws[addr].s = { font: { bold: true } };
   }
   ws["!cols"] = [
-    { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 14 },
+    { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 28 }, { wch: 14 }, { wch: 8 },
     { wch: 22 }, { wch: 16 }, { wch: 30 }, { wch: 14 },
   ];
   const wb = XLSX.utils.book_new();
@@ -62,10 +64,13 @@ export function exportTxt(entries: VotEntry[]) {
   const divider = "——————————————————————————";
   const blocks = entries.map((e) => {
     const ts = effectiveTimestamp(e);
+    const result = evaluateEntry(e);
     return [
       `VOT CHECK — ${fmtDate(ts)} ${fmtTime(ts)}`,
       `Location:  ${e.location}`,
+      `Method:    ${methodLabel(e.method) || "—"}`,
       `Deviation: ${fmtDeg(e.deviationDeg)}`,
+      `Result:    ${result ?? "—"}`,
       `Signed by: ${e.signedBy}`,
       `Signed at: ${e.signedAt}`,
       `Notes:     ${e.notes?.trim() || "—"}`,

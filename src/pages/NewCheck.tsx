@@ -16,8 +16,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { addEntry, newId, type VotEntry } from "@/lib/vot-storage";
+import {
+  addEntry,
+  newId,
+  VOT_METHODS,
+  evaluateEntry,
+  methodLabel,
+  methodTolerance,
+  type VotEntry,
+  type VotMethod,
+} from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
 
 const fmtFull = (iso: string) =>
@@ -43,6 +53,7 @@ const NewCheck = () => {
   const [confirmEditOpen, setConfirmEditOpen] = useState(false);
 
   const [location, setLocation] = useState("");
+  const [method, setMethod] = useState<VotMethod | "">("");
   const [deviation, setDeviation] = useState<string>("");
   const [notes, setNotes] = useState("");
 
@@ -52,7 +63,13 @@ const NewCheck = () => {
   const deviationNum = deviation === "" ? null : Number(deviation);
   const deviationValid = deviationNum !== null && !Number.isNaN(deviationNum) && deviationNum >= -180 && deviationNum <= 180;
 
-  const canSave = !!pilot?.fullName && location.trim().length > 0 && deviationValid;
+  const tolerance = method ? methodTolerance(method) : null;
+  const result =
+    method && deviationValid && deviationNum !== null
+      ? evaluateEntry({ method, deviationDeg: deviationNum })
+      : null;
+
+  const canSave = !!pilot?.fullName && location.trim().length > 0 && !!method && deviationValid;
 
   // Reset slider value to mirror numeric input within ±10° range
   const sliderValue = useMemo(() => {
@@ -75,6 +92,7 @@ const NewCheck = () => {
       userTimestamp: userTs,
       timeOverridden: !!userTs && userTs !== autoTs,
       location: location.trim(),
+      method: method || undefined,
       deviationDeg: Math.round(deviationNum * 10) / 10,
       notes: notes.trim() || undefined,
       signed: true,
@@ -85,6 +103,7 @@ const NewCheck = () => {
     setConfirmSignOpen(false);
     toast({ title: "Entry signed and saved" });
     setLocation("");
+    setMethod("");
     setDeviation("");
     setNotes("");
     setUserTs(undefined);
@@ -159,7 +178,25 @@ const NewCheck = () => {
         />
       </div>
 
-      {/* Deviation */}
+      {/* Method */}
+      <div className="space-y-1.5">
+        <Label htmlFor="method">Method <span className="text-destructive">*</span></Label>
+        <Select value={method} onValueChange={(v) => setMethod(v as VotMethod)}>
+          <SelectTrigger id="method">
+            <SelectValue placeholder="Select check method" />
+          </SelectTrigger>
+          <SelectContent>
+            {VOT_METHODS.map((m) => (
+              <SelectItem key={m.code} value={m.code}>
+                {m.label} (±{m.tolerance}°)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {method === "dual_vor" && (
+          <p className="text-xs text-muted-foreground">Enter the difference between the two receivers.</p>
+        )}
+      </div>
       <div className="space-y-2">
         <Label htmlFor="dev">Deviation (degrees) <span className="text-destructive">*</span></Label>
         <div className="rounded-xl border border-border bg-card p-4">
@@ -168,6 +205,23 @@ const NewCheck = () => {
               ? `${deviationNum > 0 ? "+" : ""}${deviationNum.toFixed(1)}°`
               : "—"}
           </div>
+          {tolerance !== null && (
+            <div className="mt-1 flex items-center justify-center gap-2 text-xs">
+              <span className="text-muted-foreground">Tolerance ±{tolerance}°</span>
+              {result && (
+                <span
+                  className={
+                    "px-2 py-0.5 rounded-full font-semibold tracking-wide " +
+                    (result === "PASS"
+                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                      : "bg-destructive/15 text-destructive border border-destructive/30")
+                  }
+                >
+                  {result}
+                </span>
+              )}
+            </div>
+          )}
           <div className="mt-3 flex items-center gap-3">
             <Input
               id="dev"
@@ -246,11 +300,24 @@ const NewCheck = () => {
                 <div>This record will be locked after saving.</div>
                 <div className="rounded-md bg-muted p-3 space-y-1 font-display">
                   <div>Location: <span className="text-foreground">{location}</span></div>
+                  <div>Method: <span className="text-foreground">{methodLabel(method as VotMethod) || "—"}</span></div>
                   <div>
                     Deviation:{" "}
                     <span className="text-accent">
                       {deviationNum !== null ? `${deviationNum > 0 ? "+" : ""}${deviationNum.toFixed(1)}°` : "—"}
                     </span>
+                    {result && (
+                      <span
+                        className={
+                          "ml-2 px-2 py-0.5 rounded-full text-xs " +
+                          (result === "PASS"
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-destructive/15 text-destructive")
+                        }
+                      >
+                        {result}
+                      </span>
+                    )}
                   </div>
                   <div>Time: <span className="text-foreground">{fmtFull(effectiveTs)}</span></div>
                 </div>
