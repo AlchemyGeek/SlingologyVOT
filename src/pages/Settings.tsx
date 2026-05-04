@@ -25,7 +25,7 @@ const Settings = () => {
   const [savedHint, setSavedHint] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [pending, setPending] = useState<VotEntry[] | null>(null);
+  const [pending, setPending] = useState<ImportPayload | null>(null);
 
   useEffect(() => {
     setFullName(pilot?.fullName ?? "");
