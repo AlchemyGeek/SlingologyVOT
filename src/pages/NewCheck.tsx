@@ -178,7 +178,25 @@ const NewCheck = () => {
         />
       </div>
 
-      {/* Deviation */}
+      {/* Method */}
+      <div className="space-y-1.5">
+        <Label htmlFor="method">Method <span className="text-destructive">*</span></Label>
+        <Select value={method} onValueChange={(v) => setMethod(v as VotMethod)}>
+          <SelectTrigger id="method">
+            <SelectValue placeholder="Select check method" />
+          </SelectTrigger>
+          <SelectContent>
+            {VOT_METHODS.map((m) => (
+              <SelectItem key={m.code} value={m.code}>
+                {m.label} (±{m.tolerance}°)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {method === "dual_vor" && (
+          <p className="text-xs text-muted-foreground">Enter the difference between the two receivers.</p>
+        )}
+      </div>
       <div className="space-y-2">
         <Label htmlFor="dev">Deviation (degrees) <span className="text-destructive">*</span></Label>
         <div className="rounded-xl border border-border bg-card p-4">
