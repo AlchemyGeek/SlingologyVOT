@@ -116,7 +116,7 @@ const History = () => {
         <h1 className="text-xl font-semibold">History</h1>
         <Sheet open={exportOpen} onOpenChange={setExportOpen}>
           <SheetTrigger asChild>
-            <Button size="sm" variant="outline" disabled={sorted.length === 0}>
+            <Button size="sm" variant="outline" disabled={sorted.length === 0 && sites.length === 0}>
               <Download className="h-4 w-4 mr-1.5" /> Export
             </Button>
           </SheetTrigger>
