@@ -158,3 +158,17 @@ export function updateSite(id: string, patch: Partial<Omit<VotSite, "id" | "crea
 export function deleteSite(id: string) {
   saveSites(getSites().filter((s) => s.id !== id));
 }
+
+export function mergeSites(incoming: VotSite[]): number {
+  const existing = getSites();
+  const seen = new Set(existing.map((s) => s.id));
+  const added: VotSite[] = [];
+  for (const s of incoming) {
+    if (!seen.has(s.id)) {
+      added.push(s);
+      seen.add(s.id);
+    }
+  }
+  if (added.length) saveSites([...existing, ...added]);
+  return added.length;
+}
