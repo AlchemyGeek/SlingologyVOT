@@ -107,7 +107,7 @@ const Sites = () => {
       return;
     }
     const now = new Date().toISOString();
-    const frequency = form.frequency.trim().replace(",", ".");
+    const frequency = normalizeFreq(form.frequency);
     const azimuth = Number(form.azimuth);
     const note = form.note.trim() || undefined;
     if (editingId) {
