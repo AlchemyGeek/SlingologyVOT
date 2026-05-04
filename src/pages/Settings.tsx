@@ -14,10 +14,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { mergeEntries, savePilot } from "@/lib/vot-storage";
+import { mergeEntries, mergeSites, savePilot } from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
-import { parseImportFile } from "@/lib/vot-exports";
-import type { VotEntry } from "@/lib/vot-storage";
+import { parseImportFile, type ImportPayload } from "@/lib/vot-exports";
 
 const Settings = () => {
   const pilot = usePilot();
