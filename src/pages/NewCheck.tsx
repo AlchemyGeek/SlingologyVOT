@@ -53,6 +53,7 @@ const NewCheck = () => {
   const [confirmEditOpen, setConfirmEditOpen] = useState(false);
 
   const [location, setLocation] = useState("");
+  const [method, setMethod] = useState<VotMethod | "">("");
   const [deviation, setDeviation] = useState<string>("");
   const [notes, setNotes] = useState("");
 
@@ -62,7 +63,13 @@ const NewCheck = () => {
   const deviationNum = deviation === "" ? null : Number(deviation);
   const deviationValid = deviationNum !== null && !Number.isNaN(deviationNum) && deviationNum >= -180 && deviationNum <= 180;
 
-  const canSave = !!pilot?.fullName && location.trim().length > 0 && deviationValid;
+  const tolerance = method ? methodTolerance(method) : null;
+  const result =
+    method && deviationValid && deviationNum !== null
+      ? evaluateEntry({ method, deviationDeg: deviationNum })
+      : null;
+
+  const canSave = !!pilot?.fullName && location.trim().length > 0 && !!method && deviationValid;
 
   // Reset slider value to mirror numeric input within ±10° range
   const sliderValue = useMemo(() => {
