@@ -22,14 +22,34 @@ const fmtDeg = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}°`;
 
 const HistoryRow = ({ e, onDelete }: { e: VotEntry; onDelete: (id: string) => void }) => {
   const [confirming, setConfirming] = useState(false);
+  const result = evaluateEntry(e);
+  const tol = methodTolerance(e.method);
+  const mLabel = methodLabel(e.method);
   return (
     <li className="rounded-xl border border-border bg-card p-3.5 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-medium text-foreground truncate">{e.location}</span>
             <span className="font-display text-accent">{fmtDeg(e.deviationDeg)}</span>
+            {result && (
+              <span
+                className={
+                  "px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide " +
+                  (result === "PASS"
+                    ? "bg-emerald-500/15 text-emerald-400"
+                    : "bg-destructive/15 text-destructive")
+                }
+              >
+                {result}
+              </span>
+            )}
           </div>
+          {mLabel && (
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {mLabel} · ±{tol}°
+            </div>
+          )}
           <div className="text-xs text-muted-foreground mt-0.5">
             {fmtDate(effectiveTimestamp(e))} · Signed by {e.signedBy}
           </div>
