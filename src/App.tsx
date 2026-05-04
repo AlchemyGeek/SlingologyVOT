@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShell } from "@/components/AppShell";
 import NewCheck from "./pages/NewCheck";
 import History from "./pages/History";
+import Sites from "./pages/Sites";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
 
