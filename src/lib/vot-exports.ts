@@ -64,10 +64,13 @@ export function exportTxt(entries: VotEntry[]) {
   const divider = "——————————————————————————";
   const blocks = entries.map((e) => {
     const ts = effectiveTimestamp(e);
+    const result = evaluateEntry(e);
     return [
       `VOT CHECK — ${fmtDate(ts)} ${fmtTime(ts)}`,
       `Location:  ${e.location}`,
+      `Method:    ${methodLabel(e.method) || "—"}`,
       `Deviation: ${fmtDeg(e.deviationDeg)}`,
+      `Result:    ${result ?? "—"}`,
       `Signed by: ${e.signedBy}`,
       `Signed at: ${e.signedAt}`,
       `Notes:     ${e.notes?.trim() || "—"}`,
