@@ -22,6 +22,7 @@ const App = () => (
           <Route element={<AppShell />}>
             <Route path="/" element={<NewCheck />} />
             <Route path="/history" element={<History />} />
+            <Route path="/sites" element={<Sites />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
