@@ -37,7 +37,12 @@ import {
 import { useSites } from "@/lib/vot-hooks";
 
 const NOTE_MAX = 100;
-const FREQ_RE = /^\d{3}[.,]\d{2}$/;
+const FREQ_RE = /^\d{3}[.,]\d{1,2}$/;
+
+const normalizeFreq = (raw: string) => {
+  const [whole, frac = ""] = raw.trim().replace(",", ".").split(".");
+  return `${whole}.${(frac + "00").slice(0, 2)}`;
+};
 
 interface FormState {
   method: VotMethod | "";
