@@ -113,3 +113,48 @@ export function newId(): string {
 export function effectiveTimestamp(e: VotEntry): string {
   return e.timeOverridden && e.userTimestamp ? e.userTimestamp : e.autoTimestamp;
 }
+
+// ---------- Sites ----------
+
+export interface VotSite {
+  id: string;
+  method: VotMethod;
+  location: string;
+  frequency: string; // "112.30"
+  azimuth: number;   // 0..359
+  note?: string;     // <=100 chars
+  createdAt: string;
+  updatedAt: string;
+}
+
+const SITES_KEY = "vot.sites";
+
+export function getSites(): VotSite[] {
+  try {
+    const raw = localStorage.getItem(SITES_KEY);
+    return raw ? (JSON.parse(raw) as VotSite[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveSites(sites: VotSite[]) {
+  localStorage.setItem(SITES_KEY, JSON.stringify(sites));
+  window.dispatchEvent(new Event("vot:sites-changed"));
+}
+
+export function addSite(site: VotSite) {
+  saveSites([...getSites(), site]);
+}
+
+export function updateSite(id: string, patch: Partial<Omit<VotSite, "id" | "createdAt">>) {
+  saveSites(
+    getSites().map((s) =>
+      s.id === id ? { ...s, ...patch, updatedAt: new Date().toISOString() } : s,
+    ),
+  );
+}
+
+export function deleteSite(id: string) {
+  saveSites(getSites().filter((s) => s.id !== id));
+}
