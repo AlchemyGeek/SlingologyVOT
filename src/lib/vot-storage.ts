@@ -5,8 +5,36 @@ export interface Pilot {
   certificateNumber?: string;
 }
 
+export type VotMethod =
+  | "vot"
+  | "repair_station"
+  | "ground_checkpoint"
+  | "airborne_checkpoint"
+  | "dual_vor";
+
+export const VOT_METHODS: { code: VotMethod; label: string; tolerance: number }[] = [
+  { code: "vot", label: "VOT", tolerance: 4 },
+  { code: "repair_station", label: "Certified repair station test signal", tolerance: 4 },
+  { code: "ground_checkpoint", label: "Designated surface checkpoint", tolerance: 4 },
+  { code: "airborne_checkpoint", label: "Designated airborne checkpoint", tolerance: 6 },
+  { code: "dual_vor", label: "Dual VOR system check", tolerance: 4 },
+];
+
+export function methodLabel(code?: VotMethod): string {
+  return VOT_METHODS.find((m) => m.code === code)?.label ?? "";
+}
+export function methodTolerance(code?: VotMethod): number | null {
+  return VOT_METHODS.find((m) => m.code === code)?.tolerance ?? null;
+}
+export function evaluateEntry(e: { method?: VotMethod; deviationDeg: number }): "PASS" | "FAIL" | null {
+  const tol = methodTolerance(e.method);
+  if (tol === null) return null;
+  return Math.abs(e.deviationDeg) <= tol ? "PASS" : "FAIL";
+}
+
 export interface VotEntry {
   id: string;
+  method?: VotMethod;
   /** ISO timestamp captured automatically when the New Check screen opened. */
   autoTimestamp: string;
   /** ISO timestamp set by the pilot if they edited the time. */
