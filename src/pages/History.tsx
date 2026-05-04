@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useEntries, usePilot } from "@/lib/vot-hooks";
-import { deleteEntry, effectiveTimestamp, type VotEntry } from "@/lib/vot-storage";
+import { deleteEntry, effectiveTimestamp, evaluateEntry, methodLabel, methodTolerance, type VotEntry } from "@/lib/vot-storage";
 import { exportJson, exportTxt, exportXlsx } from "@/lib/vot-exports";
 
 const fmtDate = (iso: string) =>
