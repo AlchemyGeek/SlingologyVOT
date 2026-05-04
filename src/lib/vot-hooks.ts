@@ -28,3 +28,17 @@ export function useEntries(): VotEntry[] {
   }, []);
   return entries;
 }
+
+export function useSites(): VotSite[] {
+  const [sites, setSites] = useState<VotSite[]>(() => getSites());
+  useEffect(() => {
+    const sync = () => setSites(getSites());
+    window.addEventListener("vot:sites-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("vot:sites-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  return sites;
+}
