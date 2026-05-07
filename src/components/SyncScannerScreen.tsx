@@ -142,7 +142,12 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
             playsInline
             autoPlay
             muted
+            disablePictureInPicture
+            controls={false}
             className="absolute inset-0 w-full h-full object-cover"
+            style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)" }}
+            onLoadedMetadata={(e) => { e.currentTarget.play().catch(() => {}); }}
+            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
           />
           <div className="absolute inset-8 border-2 border-white/70 rounded-xl pointer-events-none" />
           {status === "fetching" && (
