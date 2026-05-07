@@ -128,14 +128,16 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
     };
   }, [open, onOpenChange, onScanned]);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
-        <DialogTitle className="sr-only">Scan QR Code</DialogTitle>
-        <DialogDescription className="sr-only">
-          Point your camera at the QR code on the other device.
-        </DialogDescription>
+  if (!open) return null;
 
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan QR Code"
+    >
+      <div className="relative w-full max-w-md bg-background rounded-lg overflow-hidden shadow-xl">
         <div className="relative bg-black aspect-square">
           <video
             ref={videoRef}
@@ -172,7 +174,7 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
           </p>
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
