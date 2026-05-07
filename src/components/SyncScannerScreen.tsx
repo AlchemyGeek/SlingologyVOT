@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+// Dialog intentionally not used: iOS Safari refuses to paint <video> inside a CSS-transformed ancestor.
 import { pullSync, PullError } from "@/lib/vot-sync";
 import type { ImportPayload } from "@/lib/vot-exports";
 import { toast } from "@/hooks/use-toast";
