@@ -56,7 +56,7 @@ export const AppShell = () => {
           <img src={logo} alt="SlingologyVOT logo" className="h-9 w-9 rounded-md" />
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-wide text-foreground">SLINGOLOGY</span>
-            <span className="text-xs text-muted-foreground -mt-0.5">VOT · VOR Check Logger · v26.05.01</span>
+            <span className="text-xs text-muted-foreground -mt-0.5">VOT · VOR Check Logger</span>
           </div>
           <DaysSinceBadge />
         </div>
