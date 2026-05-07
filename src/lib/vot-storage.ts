@@ -46,6 +46,8 @@ export interface VotEntry {
   notes?: string;
   signed: boolean;
   signedBy: string;
+  /** Certificate number of the pilot at the moment of signing. Snapshotted so imports preserve original signer. */
+  signedByCert?: string;
   /** ISO timestamp of the moment of signing. */
   signedAt: string;
 }
