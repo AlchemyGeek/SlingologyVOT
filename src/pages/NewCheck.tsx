@@ -97,6 +97,7 @@ const NewCheck = () => {
       notes: notes.trim() || undefined,
       signed: true,
       signedBy: pilot.fullName,
+      signedByCert: pilot.certificateNumber?.trim() || undefined,
       signedAt: new Date().toISOString(),
     };
     addEntry(entry);

@@ -54,7 +54,7 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string, sites: VotSi
       "Deviation (°)": e.deviationDeg,
       Result: evaluateEntry(e) ?? "",
       "Signed By": e.signedBy,
-      "Certificate No.": pilotCert ?? "",
+      "Certificate No.": e.signedByCert ?? pilotCert ?? "",
       Notes: e.notes ?? "",
       "Time Override": e.timeOverridden ? "Yes" : "No",
     };
@@ -99,7 +99,7 @@ export function exportTxt(entries: VotEntry[], sites: VotSite[] = []) {
       `Method:    ${methodLabel(e.method) || "—"}`,
       `Deviation: ${fmtDeg(e.deviationDeg)}`,
       `Result:    ${result ?? "—"}`,
-      `Signed by: ${e.signedBy}`,
+      `Signed by: ${e.signedBy}${e.signedByCert ? ` (Cert ${e.signedByCert})` : ""}`,
       `Signed at: ${e.signedAt}`,
       `Notes:     ${e.notes?.trim() || "—"}`,
       divider,
