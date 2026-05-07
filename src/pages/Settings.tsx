@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { QrCode, Upload, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,10 +13,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { toast } from "@/hooks/use-toast";
 import { mergeEntries, mergeSites, savePilot } from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
 import { parseImportFile, type ImportPayload } from "@/lib/vot-exports";
+import { SyncScannerScreen } from "@/components/SyncScannerScreen";
 
 const Settings = () => {
   const pilot = usePilot();
@@ -26,6 +34,8 @@ const Settings = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<ImportPayload | null>(null);
+  const [importSheetOpen, setImportSheetOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     setFullName(pilot?.fullName ?? "");
