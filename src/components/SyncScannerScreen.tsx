@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+// Dialog intentionally not used: iOS Safari refuses to paint <video> inside a CSS-transformed ancestor.
 import { pullSync, PullError } from "@/lib/vot-sync";
 import type { ImportPayload } from "@/lib/vot-exports";
 import { toast } from "@/hooks/use-toast";
@@ -128,21 +128,28 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
     };
   }, [open, onOpenChange, onScanned]);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
-        <DialogTitle className="sr-only">Scan QR Code</DialogTitle>
-        <DialogDescription className="sr-only">
-          Point your camera at the QR code on the other device.
-        </DialogDescription>
+  if (!open) return null;
 
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan QR Code"
+    >
+      <div className="relative w-full max-w-md bg-background rounded-lg overflow-hidden shadow-xl">
         <div className="relative bg-black aspect-square">
           <video
             ref={videoRef}
             playsInline
             autoPlay
             muted
+            disablePictureInPicture
+            controls={false}
             className="absolute inset-0 w-full h-full object-cover"
+            style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)" }}
+            onLoadedMetadata={(e) => { e.currentTarget.play().catch(() => {}); }}
+            onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
           />
           <div className="absolute inset-8 border-2 border-white/70 rounded-xl pointer-events-none" />
           {status === "fetching" && (
@@ -167,7 +174,7 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
           </p>
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
