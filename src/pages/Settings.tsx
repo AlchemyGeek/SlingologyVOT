@@ -182,9 +182,6 @@ const Settings = () => {
         onScanned={(payload) => setPending(payload)}
       />
 
-      <p className="text-xs text-muted-foreground text-center">
-        SlingologyVOT · v1.0 · All data stays on this device.
-      </p>
 
       <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <AlertDialogContent>
