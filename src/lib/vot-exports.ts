@@ -54,7 +54,7 @@ export function exportXlsx(entries: VotEntry[], pilotCert?: string, sites: VotSi
       "Deviation (°)": e.deviationDeg,
       Result: evaluateEntry(e) ?? "",
       "Signed By": e.signedBy,
-      "Certificate No.": pilotCert ?? "",
+      "Certificate No.": e.signedByCert ?? pilotCert ?? "",
       Notes: e.notes ?? "",
       "Time Override": e.timeOverridden ? "Yes" : "No",
     };
