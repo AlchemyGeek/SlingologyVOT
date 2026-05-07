@@ -51,10 +51,24 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
       }
     };
 
+    const prepareVideo = () => {
+      const v = videoRef.current;
+      if (!v) return;
+      // iOS Safari requires these set as actual attributes BEFORE srcObject/play
+      v.setAttribute("playsinline", "true");
+      v.setAttribute("webkit-playsinline", "true");
+      v.setAttribute("autoplay", "true");
+      v.setAttribute("muted", "true");
+      v.muted = true;
+      v.playsInline = true;
+      v.autoplay = true;
+    };
+
     const start = async () => {
       setError(null);
       setStatus("scanning");
       try {
+        prepareVideo();
         const Detector = window.BarcodeDetector;
         if (Detector && (await Detector.getSupportedFormats?.())?.includes?.("qr_code")) {
           stream = await navigator.mediaDevices.getUserMedia({
