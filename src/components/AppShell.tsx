@@ -56,7 +56,7 @@ export const AppShell = () => {
           <img src={logo} alt="SlingologyVOT logo" className="h-9 w-9 rounded-md" />
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-wide text-foreground">SLINGOLOGY</span>
-            <span className="text-xs text-muted-foreground -mt-0.5">VOT · VOR Check Logger · v26.05.01</span>
+            <span className="text-xs text-muted-foreground -mt-0.5">VOT · VOR Check Logger</span>
           </div>
           <DaysSinceBadge />
         </div>
@@ -67,6 +67,9 @@ export const AppShell = () => {
       <main className="flex-1 w-full">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
           <Outlet />
+          <p className="text-[10px] text-muted-foreground text-center mt-6 opacity-60">
+            v26.05.01
+          </p>
         </div>
       </main>
 
