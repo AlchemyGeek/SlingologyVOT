@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Download, Trash2, X } from "lucide-react";
+import { Download, QrCode, Trash2, X } from "lucide-react";
+import { SyncQrScreen } from "@/components/SyncQrScreen";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
