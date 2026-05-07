@@ -1,59 +1,79 @@
-## Add "Sites" section (CRUD list of test locations)
+# Ephemeral Cloud Sync — Implementation Plan
 
-A new tab between **History** and **Settings** where pilots can record VOT test sites they've discovered. Each site is editable and stored locally (same pattern as entries).
+Replace the file-based-only sync with a QR-code ephemeral relay backed by Lovable Cloud. Entries **and** Sites travel together. File import/export remains the always-available fallback.
 
-### Site fields
-- **Method** — same dropdown as New Check (`VOT_METHODS` from `vot-storage.ts`)
-- **Location** — free text (e.g. "KPAE — Run-up area Bravo")
-- **Frequency** — masked input in the form `XXX.XX` (e.g. `108.00`–`117.95`); accept comma or dot, store as number string `XXX.XX`
-- **Azimuth** — degrees `0–359` (integer)
-- **Note** — short text, max 100 characters
+## 1. Backend (Lovable Cloud)
 
-### Data model — `src/lib/vot-storage.ts`
-Add:
-```ts
-export interface VotSite {
-  id: string;
-  method: VotMethod;
-  location: string;
-  frequency: string;   // "112.30"
-  azimuth: number;     // 0..359
-  note?: string;       // <=100 chars
-  createdAt: string;
-  updatedAt: string;
-}
+### Table `sync_payloads`
+| col | type | notes |
+|---|---|---|
+| `token` | uuid (PK, default `gen_random_uuid()`) | retrieval token |
+| `payload` | jsonb | `{ schema, version, entries, sites }` |
+| `entry_count` | int | shown on QR screen |
+| `site_count` | int | shown on QR screen |
+| `expires_at` | timestamptz | now() + 10 min |
+| `consumed_at` | timestamptz nullable | set on first successful GET |
+| `created_at` | timestamptz default now() | |
+
+RLS: **enabled, no policies**. All access goes through edge functions using the service-role key — clients cannot read/write directly.
+
+### Edge functions (`verify_jwt = false`, public)
+- **`sync-push`** (POST): validates body with Zod (entries[], sites[], reasonable size cap ~2 MB), inserts row, returns `{ token, expiresAt, entryCount, siteCount }`.
+- **`sync-pull`** (POST `{ token }`): looks up row; if missing/expired/already consumed → 410 with code (`expired` | `consumed` | `not_found`). Otherwise marks `consumed_at = now()` atomically (UPDATE ... WHERE consumed_at IS NULL AND expires_at > now() RETURNING payload) and returns the payload.
+- **`sync-cleanup`** (scheduled daily via pg_cron in a migration): `DELETE FROM sync_payloads WHERE expires_at < now() - interval '1 day' OR consumed_at < now() - interval '1 day'`.
+
+CORS headers on every response, including errors.
+
+## 2. Frontend changes
+
+### `src/lib/vot-sync.ts` (new)
+Thin client wrapping `supabase.functions.invoke('sync-push' | 'sync-pull')`. Builds the payload using the existing `exportJson` shape so the server format matches the file backup exactly.
+
+### `src/pages/History.tsx` — Export sheet
+Add **"Sync to Another Device"** as the first option, above Excel / Plain Text / JSON Backup. Disabled when offline (`!navigator.onLine`) with a hint pointing to JSON backup. Tapping it opens the QR screen.
+
+### `src/components/SyncQrScreen.tsx` (new)
+Full-screen modal (Dialog) shown on the source device:
+- Calls `sync-push` on open, shows spinner.
+- Renders QR using **`qrcode`** npm package into a `<canvas>` (token only — short, no payload in QR).
+- Live MM:SS countdown derived from server-returned `expiresAt`.
+- Labels: "Scan this code on your other device to import your VOT log.", "X entries · Y sites included", and a small note: "Only scan on your own device."
+- On expiry: replaces QR with "Code expired. Tap to generate a new one." (regenerates by calling push again).
+- Cancel/Done dismisses.
+
+### `src/pages/Settings.tsx` — Import options
+Replace the single "Import Data" button with a sheet offering:
+- **Scan QR Code** → opens `SyncScannerScreen`
+- **Import from File** → existing file picker (unchanged)
+
+### `src/components/SyncScannerScreen.tsx` (new)
+Full-screen camera viewfinder:
+- Prefers `window.BarcodeDetector` when available; falls back to **`@zxing/browser`** (works on iOS Safari).
+- Decodes token → calls `sync-pull` → on success, hands the payload to the existing import-confirmation flow (reuses `ImportPayload`, `mergeEntries`, `mergeSites`).
+- Error states map to friendly messages: expired/consumed → "This sync code has expired or has already been used…"; camera denied → instructions; offline → fallback hint.
+
+### Reuse, no duplication
+The merge confirmation dialog and toast already in `Settings.tsx` are reused — both file import and QR import set the same `pending: ImportPayload` state.
+
+## 3. Payload format
+Identical to existing JSON export so files and cloud sync are interchangeable:
+```json
+{ "schema": "slingology-vot", "version": 1, "entries": [...], "sites": [...] }
 ```
-Add helpers mirroring entries: `getSites()`, `saveSites()`, `addSite()`, `updateSite(id, patch)`, `deleteSite(id)` using key `vot.sites` and event `vot:sites-changed`.
+Pilot profile is **not** included (per spec §8).
 
-### Hook — `src/lib/vot-hooks.ts`
-Add `useSites()` mirroring `useEntries()`.
+## 4. Dependencies
+- `qrcode` — render QR on source device
+- `@zxing/browser` — camera fallback for iOS Safari (BarcodeDetector primary)
 
-### Routing — `src/App.tsx`
-Add `<Route path="/sites" element={<Sites />} />`.
+## 5. Out of scope
+- Syncing pilot identity / Settings
+- Background or auto-sync
+- Cross-account / multi-user sharing
+- History of past syncs
 
-### Nav — `src/components/AppShell.tsx`
-Insert a new tab between History and Settings (icon: `MapPin` from lucide). Grid becomes `grid-cols-4`.
-
-### New page — `src/pages/Sites.tsx`
-- Header: "Sites" with an "Add site" button (top-right) opening a Dialog.
-- Empty state: short explainer ("Save the test locations you've found — VOTs, surface checkpoints, etc.") with a primary "Add your first site" button.
-- List: cards showing Location (title), Method label as a chip, `Freq 112.30 · Az 045°`, and the note if present. Trailing buttons: Edit (pencil) and Delete (trash, with AlertDialog confirm).
-- Add/Edit dialog: same form fields, validates:
-  - Method required
-  - Location required (trimmed)
-  - Frequency matches `^\d{3}[.,]\d{2}$`, normalized to dot
-  - Azimuth integer `0–359`
-  - Note ≤100 chars (live counter)
-- Sort: most recently updated first.
-
-### Out of scope
-- No link from sites to auto-fill New Check (can be a follow-up).
-- No import/export of sites in this pass.
-- No favorites/tags.
-
-### Files touched
-- `src/lib/vot-storage.ts` — add types + CRUD
-- `src/lib/vot-hooks.ts` — add `useSites`
-- `src/App.tsx` — add route
-- `src/components/AppShell.tsx` — add tab, switch to 4-column grid
-- `src/pages/Sites.tsx` — new
+## 6. Files touched / created
+- **New:** `supabase/functions/sync-push/index.ts`, `supabase/functions/sync-pull/index.ts`, `supabase/functions/sync-cleanup/index.ts`
+- **New migration:** create `sync_payloads` table + enable RLS + pg_cron schedule for `sync-cleanup`
+- **New:** `src/lib/vot-sync.ts`, `src/components/SyncQrScreen.tsx`, `src/components/SyncScannerScreen.tsx`
+- **Edited:** `src/pages/History.tsx` (export sheet entry), `src/pages/Settings.tsx` (import sheet with two options, reuse merge flow)

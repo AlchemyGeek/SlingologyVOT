@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Download, Trash2, X } from "lucide-react";
+import { Download, QrCode, Trash2, X } from "lucide-react";
+import { SyncQrScreen } from "@/components/SyncQrScreen";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -92,6 +93,7 @@ const History = () => {
   const pilot = usePilot();
   const sites = useSites();
   const [exportOpen, setExportOpen] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
 
   const sorted = useMemo(
     () =>
@@ -110,6 +112,18 @@ const History = () => {
     setExportOpen(false);
   };
 
+  const startSync = () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      // Offline: route the user to the file fallback per spec.
+      alert(
+        "No internet connection. Use Export > JSON Backup and AirDrop to sync manually.",
+      );
+      return;
+    }
+    setExportOpen(false);
+    setSyncOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -123,9 +137,12 @@ const History = () => {
           <SheetContent side="bottom" className="rounded-t-2xl">
             <SheetHeader>
               <SheetTitle>Export VOT Log</SheetTitle>
-              <SheetDescription>Choose a format to download.</SheetDescription>
+              <SheetDescription>Sync to another device or download a copy.</SheetDescription>
             </SheetHeader>
             <div className="mt-4 grid gap-2">
+              <Button variant="outline" className="justify-start h-12" onClick={startSync}>
+                <QrCode className="h-4 w-4 mr-2" /> Sync to Another Device
+              </Button>
               <Button variant="outline" className="justify-start h-12" onClick={() => onExport("xlsx")}>
                 Excel (.xlsx)
               </Button>
@@ -139,6 +156,13 @@ const History = () => {
           </SheetContent>
         </Sheet>
       </div>
+
+      <SyncQrScreen
+        open={syncOpen}
+        onOpenChange={setSyncOpen}
+        entries={sorted}
+        sites={sites}
+      />
 
       {sorted.length === 0 ? (
         <div className="text-center text-muted-foreground py-16 border border-dashed border-border rounded-xl">

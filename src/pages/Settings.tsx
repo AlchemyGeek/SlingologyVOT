@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { QrCode, Upload, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,10 +13,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { toast } from "@/hooks/use-toast";
 import { mergeEntries, mergeSites, savePilot } from "@/lib/vot-storage";
 import { usePilot } from "@/lib/vot-hooks";
 import { parseImportFile, type ImportPayload } from "@/lib/vot-exports";
+import { SyncScannerScreen } from "@/components/SyncScannerScreen";
 
 const Settings = () => {
   const pilot = usePilot();
@@ -26,6 +34,8 @@ const Settings = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<ImportPayload | null>(null);
+  const [importSheetOpen, setImportSheetOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     setFullName(pilot?.fullName ?? "");
@@ -112,12 +122,12 @@ const Settings = () => {
         </h2>
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
           <p className="text-sm text-muted-foreground">
-            Restore or merge entries from a JSON backup file exported on another device.
+            Receive entries and sites from another device by scanning a sync code, or restore from a JSON backup file.
           </p>
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setImportSheetOpen(true)}
           >
             <Upload className="h-4 w-4 mr-1.5" />
             Import Data
@@ -134,6 +144,43 @@ const Settings = () => {
           />
         </div>
       </section>
+
+      <Sheet open={importSheetOpen} onOpenChange={setImportSheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>Import Data</SheetTitle>
+            <SheetDescription>Choose how to bring data into this device.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 grid gap-2">
+            <Button
+              variant="outline"
+              className="justify-start h-12"
+              onClick={() => {
+                setImportSheetOpen(false);
+                setScannerOpen(true);
+              }}
+            >
+              <QrCode className="h-4 w-4 mr-2" /> Scan QR Code
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-12"
+              onClick={() => {
+                setImportSheetOpen(false);
+                fileInputRef.current?.click();
+              }}
+            >
+              <FileUp className="h-4 w-4 mr-2" /> Import from File
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <SyncScannerScreen
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onScanned={(payload) => setPending(payload)}
+      />
 
       <p className="text-xs text-muted-foreground text-center">
         SlingologyVOT · v1.0 · All data stays on this device.
