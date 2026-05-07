@@ -81,15 +81,21 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
           };
           raf = requestAnimationFrame(tick);
         } else {
-          // ZXing fallback
+          // ZXing fallback (iOS Safari path)
           const reader = new BrowserQRCodeReader();
-          zxingControls = await reader.decodeFromVideoDevice(
-            undefined,
+          zxingControls = await reader.decodeFromConstraints(
+            { video: { facingMode: { ideal: "environment" } }, audio: false },
             videoRef.current!,
             (result) => {
               if (result) handleToken(result.getText().trim());
             },
           );
+          // iOS sometimes needs an explicit play() after srcObject is set
+          try {
+            await videoRef.current?.play();
+          } catch {
+            // autoplay may already be in progress
+          }
         }
       } catch (e) {
         console.error(e);
