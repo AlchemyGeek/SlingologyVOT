@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      sync_payloads: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          entry_count: number
+          expires_at: string
+          payload: Json
+          site_count: number
+          token: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          entry_count?: number
+          expires_at: string
+          payload: Json
+          site_count?: number
+          token?: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          entry_count?: number
+          expires_at?: string
+          payload?: Json
+          site_count?: number
+          token?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
