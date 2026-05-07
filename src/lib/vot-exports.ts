@@ -99,7 +99,7 @@ export function exportTxt(entries: VotEntry[], sites: VotSite[] = []) {
       `Method:    ${methodLabel(e.method) || "—"}`,
       `Deviation: ${fmtDeg(e.deviationDeg)}`,
       `Result:    ${result ?? "—"}`,
-      `Signed by: ${e.signedBy}`,
+      `Signed by: ${e.signedBy}${e.signedByCert ? ` (Cert ${e.signedByCert})` : ""}`,
       `Signed at: ${e.signedAt}`,
       `Notes:     ${e.notes?.trim() || "—"}`,
       divider,
