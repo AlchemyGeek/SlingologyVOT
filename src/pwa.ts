@@ -42,4 +42,32 @@ export function registerSW() {
     updateCallback?.();
   });
   wb.register();
+
+  // Aggressive update checks: every 2 minutes while the page is visible,
+  // and immediately when the tab becomes active again.
+  const CHECK_INTERVAL_MS = 2 * 60 * 1000;
+  let intervalId: ReturnType<typeof setInterval> | null = null;
+
+  const startChecking = () => {
+    if (intervalId) return;
+    intervalId = setInterval(() => wb.update(), CHECK_INTERVAL_MS);
+    wb.update(); // check immediately when becoming visible
+  };
+
+  const stopChecking = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopChecking();
+    } else {
+      startChecking();
+    }
+  });
+
+  startChecking();
 }
