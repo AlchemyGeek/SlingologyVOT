@@ -12,13 +12,18 @@ const MAX_PAYLOAD_BYTES = 512 * 1024; // 512 KB
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Restrict to known app clients by requiring the project anon key.
-  const expectedKey = Deno.env.get("SUPABASE_ANON_KEY");
+  // Restrict to known app clients by requiring one of the project's public keys.
+  const allowed = new Set(
+    [
+      Deno.env.get("SUPABASE_ANON_KEY"),
+      Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
+    ].filter((v): v is string => !!v),
+  );
   const providedKey =
     req.headers.get("apikey") ??
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
     "";
-  if (!expectedKey || providedKey !== expectedKey) {
+  if (allowed.size === 0 || !allowed.has(providedKey)) {
     return json({ error: "unauthorized" }, 401);
   }
 
