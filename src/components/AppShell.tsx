@@ -67,6 +67,9 @@ export const AppShell = () => {
       <main className="flex-1 w-full">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
           <Outlet />
+          <p className="text-[10px] text-muted-foreground text-center mt-6 opacity-60">
+            v26.05.01
+          </p>
         </div>
       </main>
 
