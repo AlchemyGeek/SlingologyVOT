@@ -52,6 +52,7 @@ const tabs = [
 export const AppShell = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PullToRefresh />
       <header className="safe-top sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <img src={logo} alt="SlingologyVOT logo" className="h-9 w-9 rounded-md" />
