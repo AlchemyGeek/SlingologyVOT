@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { ClipboardCheck, History as HistoryIcon, MapPin, Settings as SettingsIcon } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { UpdateBanner } from "./UpdateBanner";
+import { PullToRefresh } from "./PullToRefresh";
 import { useEntries } from "@/lib/vot-hooks";
 import { effectiveTimestamp } from "@/lib/vot-storage";
 
@@ -51,6 +52,7 @@ const tabs = [
 export const AppShell = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PullToRefresh />
       <header className="safe-top sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <img src={logo} alt="SlingologyVOT logo" className="h-9 w-9 rounded-md" />
@@ -68,7 +70,7 @@ export const AppShell = () => {
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
           <Outlet />
           <p className="text-[10px] text-muted-foreground text-center mt-6 opacity-60">
-            v26.05.02
+            v26.05.03
           </p>
         </div>
       </main>

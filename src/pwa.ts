@@ -11,8 +11,7 @@ const isInIframe = (() => {
 
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.includes("lovableproject.com") ||
-  window.location.hostname.includes("lovable.app");
+  window.location.hostname.includes("lovableproject.com");
 
 let updateCallback: (() => void) | null = null;
 let waitingWb: Workbox | null = null;
@@ -25,6 +24,29 @@ export function applyUpdate() {
   if (!waitingWb) return;
   waitingWb.addEventListener("controlling", () => window.location.reload());
   waitingWb.messageSkipWaiting();
+}
+
+/**
+ * Force a full update: unregister all service workers, clear all caches,
+ * then hard-reload with a cache-busting query so the browser fetches a
+ * fresh index.html from the network.
+ */
+export async function forceUpdate() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map((n) => caches.delete(n)));
+    }
+  } catch {
+    // ignore — still attempt reload
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.set("_r", Date.now().toString(36));
+  window.location.replace(url.toString());
 }
 
 export function registerSW() {
