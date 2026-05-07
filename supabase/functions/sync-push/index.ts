@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const TTL_MINUTES = 10;
-const MAX_PAYLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
+const MAX_PAYLOAD_BYTES = 512 * 1024; // 512 KB
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
