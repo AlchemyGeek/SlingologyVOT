@@ -182,6 +182,9 @@ const Settings = () => {
         onScanned={(payload) => setPending(payload)}
       />
 
+      <p className="text-xs text-muted-foreground text-center">
+        All data stays on this device.
+      </p>
 
       <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <AlertDialogContent>
