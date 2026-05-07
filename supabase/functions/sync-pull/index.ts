@@ -12,19 +12,6 @@ const UUID_RE =
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Restrict to known app clients by requiring one of the project's public keys.
-  const allowed = getAllowedPublicKeys();
-  const providedKeys = [
-    req.headers.get("apikey"),
-    req.headers.get("authorization")?.replace(/^Bearer\s+/i, ""),
-  ]
-    .map((value) => value?.trim())
-    .filter((value): value is string => !!value);
-
-  if (allowed.size === 0 || !providedKeys.some((key) => allowed.has(key))) {
-    return json({ error: "unauthorized" }, 401);
-  }
-
   try {
     const body = await req.json();
     const token = typeof body?.token === "string" ? body.token.trim() : "";
@@ -74,32 +61,4 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-}
-
-function getAllowedPublicKeys() {
-  const values = [
-    Deno.env.get("SUPABASE_ANON_KEY"),
-    Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
-    Deno.env.get("SUPABASE_PUBLISHABLE_KEYS"),
-  ];
-
-  return new Set(
-    values.flatMap(parseSecretValues).map((value) => value.trim()).filter(Boolean),
-  );
-}
-
-function parseSecretValues(value: string | undefined): string[] {
-  if (!value) return [];
-  const trimmed = value.trim();
-  if (!trimmed) return [];
-
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (Array.isArray(parsed)) return parsed.filter((item): item is string => typeof item === "string");
-    if (typeof parsed === "string") return [parsed];
-  } catch {
-    // Fall back to comma-separated/plain secret values.
-  }
-
-  return trimmed.split(",");
 }
