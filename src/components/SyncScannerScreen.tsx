@@ -61,7 +61,6 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
       v.setAttribute("muted", "true");
       v.muted = true;
       v.playsInline = true;
-      // @ts-expect-error iOS-only
       v.autoplay = true;
     };
 
