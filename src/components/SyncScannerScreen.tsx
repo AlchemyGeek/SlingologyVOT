@@ -126,6 +126,7 @@ export function SyncScannerScreen({ open, onOpenChange, onScanned }: Props) {
           <video
             ref={videoRef}
             playsInline
+            autoPlay
             muted
             className="absolute inset-0 w-full h-full object-cover"
           />
