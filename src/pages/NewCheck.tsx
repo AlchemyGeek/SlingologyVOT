@@ -131,6 +131,7 @@ const NewCheck = () => {
     setMethod("");
     setDeviation("");
     setNotes("");
+    setSiteId("");
     setUserTs(undefined);
     setEditingTime(false);
   };
