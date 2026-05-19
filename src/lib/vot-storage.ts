@@ -161,15 +161,27 @@ export function deleteSite(id: string) {
   saveSites(getSites().filter((s) => s.id !== id));
 }
 
+function siteKey(s: Pick<VotSite, "method" | "location" | "frequency" | "azimuth">): string {
+  return [
+    s.method,
+    s.location.trim().toLowerCase(),
+    s.frequency.trim(),
+    Math.round(s.azimuth),
+  ].join("|");
+}
+
 export function mergeSites(incoming: VotSite[]): number {
   const existing = getSites();
-  const seen = new Set(existing.map((s) => s.id));
+  const seenIds = new Set(existing.map((s) => s.id));
+  const seenKeys = new Set(existing.map(siteKey));
   const added: VotSite[] = [];
   for (const s of incoming) {
-    if (!seen.has(s.id)) {
-      added.push(s);
-      seen.add(s.id);
-    }
+    if (seenIds.has(s.id)) continue;
+    const key = siteKey(s);
+    if (seenKeys.has(key)) continue;
+    added.push(s);
+    seenIds.add(s.id);
+    seenKeys.add(key);
   }
   if (added.length) saveSites([...existing, ...added]);
   return added.length;
