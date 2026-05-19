@@ -28,7 +28,7 @@ import {
   type VotEntry,
   type VotMethod,
 } from "@/lib/vot-storage";
-import { usePilot } from "@/lib/vot-hooks";
+import { usePilot, useSites } from "@/lib/vot-hooks";
 
 const fmtFull = (iso: string) =>
   new Date(iso).toLocaleString(undefined, {
@@ -46,16 +46,40 @@ const toLocalInput = (iso: string) => {
 const NewCheck = () => {
   const navigate = useNavigate();
   const pilot = usePilot();
+  const sites = useSites();
 
   const [autoTs] = useState(() => new Date().toISOString());
   const [userTs, setUserTs] = useState<string | undefined>(undefined);
   const [editingTime, setEditingTime] = useState(false);
   const [confirmEditOpen, setConfirmEditOpen] = useState(false);
 
+  const [siteId, setSiteId] = useState<string>("");
   const [location, setLocation] = useState("");
   const [method, setMethod] = useState<VotMethod | "">("");
   const [deviation, setDeviation] = useState<string>("");
   const [notes, setNotes] = useState("");
+
+  const handleSiteChange = (id: string) => {
+    if (id === "__manual__") {
+      setSiteId("");
+      return;
+    }
+    const s = sites.find((x) => x.id === id);
+    if (!s) return;
+    setSiteId(id);
+    setLocation(s.location);
+    setMethod(s.method);
+    const az = String(s.azimuth).padStart(3, "0");
+    const siteInfo = `Site: ${s.location} · Freq ${s.frequency} · Azimuth ${az}°${s.note ? ` · ${s.note}` : ""}`;
+    setNotes((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return siteInfo;
+      // Replace any existing "Site: …" prefix line so changing sites doesn't stack
+      const withoutPrev = trimmed.replace(/^Site:[^\n]*\n?/, "").trim();
+      return withoutPrev ? `${siteInfo}\n${withoutPrev}` : siteInfo;
+    });
+  };
+
 
   const [confirmSignOpen, setConfirmSignOpen] = useState(false);
 
@@ -107,6 +131,7 @@ const NewCheck = () => {
     setMethod("");
     setDeviation("");
     setNotes("");
+    setSiteId("");
     setUserTs(undefined);
     setEditingTime(false);
   };
@@ -164,6 +189,30 @@ const NewCheck = () => {
               onChange={(e) => setUserTs(new Date(e.target.value).toISOString())}
             />
           </div>
+        )}
+      </div>
+
+      {/* Site picker (optional) */}
+      <div className="space-y-1.5">
+        <Label htmlFor="site">Site (optional)</Label>
+        <Select value={siteId || "__manual__"} onValueChange={handleSiteChange}>
+          <SelectTrigger id="site">
+            <SelectValue placeholder="Choose a saved site or enter manually" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__manual__">Manual entry</SelectItem>
+            {sites.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.location} — {methodLabel(s.method)} · {s.frequency}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {sites.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            No saved sites yet.{" "}
+            <Link to="/sites" className="underline text-accent">Add one in Sites</Link>.
+          </p>
         )}
       </div>
 
