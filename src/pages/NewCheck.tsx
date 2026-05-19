@@ -192,6 +192,30 @@ const NewCheck = () => {
         )}
       </div>
 
+      {/* Site picker (optional) */}
+      <div className="space-y-1.5">
+        <Label htmlFor="site">Site (optional)</Label>
+        <Select value={siteId || "__manual__"} onValueChange={handleSiteChange}>
+          <SelectTrigger id="site">
+            <SelectValue placeholder="Choose a saved site or enter manually" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__manual__">Manual entry</SelectItem>
+            {sites.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.location} — {methodLabel(s.method)} · {s.frequency}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {sites.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            No saved sites yet.{" "}
+            <Link to="/sites" className="underline text-accent">Add one in Sites</Link>.
+          </p>
+        )}
+      </div>
+
       {/* Location */}
       <div className="space-y-1.5">
         <Label htmlFor="loc">Location / Airport <span className="text-destructive">*</span></Label>
