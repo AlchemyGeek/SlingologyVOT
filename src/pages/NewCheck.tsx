@@ -46,16 +46,40 @@ const toLocalInput = (iso: string) => {
 const NewCheck = () => {
   const navigate = useNavigate();
   const pilot = usePilot();
+  const sites = useSites();
 
   const [autoTs] = useState(() => new Date().toISOString());
   const [userTs, setUserTs] = useState<string | undefined>(undefined);
   const [editingTime, setEditingTime] = useState(false);
   const [confirmEditOpen, setConfirmEditOpen] = useState(false);
 
+  const [siteId, setSiteId] = useState<string>("");
   const [location, setLocation] = useState("");
   const [method, setMethod] = useState<VotMethod | "">("");
   const [deviation, setDeviation] = useState<string>("");
   const [notes, setNotes] = useState("");
+
+  const handleSiteChange = (id: string) => {
+    if (id === "__manual__") {
+      setSiteId("");
+      return;
+    }
+    const s = sites.find((x) => x.id === id);
+    if (!s) return;
+    setSiteId(id);
+    setLocation(s.location);
+    setMethod(s.method);
+    const az = String(s.azimuth).padStart(3, "0");
+    const siteInfo = `Site: ${s.location} · Freq ${s.frequency} · Azimuth ${az}°${s.note ? ` · ${s.note}` : ""}`;
+    setNotes((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return siteInfo;
+      // Replace any existing "Site: …" prefix line so changing sites doesn't stack
+      const withoutPrev = trimmed.replace(/^Site:[^\n]*\n?/, "").trim();
+      return withoutPrev ? `${siteInfo}\n${withoutPrev}` : siteInfo;
+    });
+  };
+
 
   const [confirmSignOpen, setConfirmSignOpen] = useState(false);
 
