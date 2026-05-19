@@ -28,7 +28,7 @@ import {
   type VotEntry,
   type VotMethod,
 } from "@/lib/vot-storage";
-import { usePilot } from "@/lib/vot-hooks";
+import { usePilot, useSites } from "@/lib/vot-hooks";
 
 const fmtFull = (iso: string) =>
   new Date(iso).toLocaleString(undefined, {
