@@ -6,13 +6,21 @@ import { PullToRefresh } from "./PullToRefresh";
 import { useEntries } from "@/lib/vot-hooks";
 import { effectiveTimestamp } from "@/lib/vot-storage";
 
+const DAYS_VALID = 30;
+
 const DaysSinceBadge = () => {
   const entries = useEntries();
   if (entries.length === 0) {
     return (
-      <div className="ml-auto flex flex-col items-end leading-tight" aria-label="No checks yet">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
-        <span className="text-sm font-semibold font-display text-muted-foreground">—</span>
+      <div className="ml-auto flex items-center gap-3">
+        <div className="flex flex-col items-end leading-tight" aria-label="No checks yet">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
+          <span className="text-sm font-semibold font-display text-muted-foreground">—</span>
+        </div>
+        <div className="flex flex-col items-end leading-tight" aria-label="No checks yet">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Days remain</span>
+          <span className="text-sm font-semibold font-display text-muted-foreground">—</span>
+        </div>
       </div>
     );
   }
@@ -22,22 +30,31 @@ const DaysSinceBadge = () => {
   const days = Math.floor(
     (Date.now() - new Date(effectiveTimestamp(latest)).getTime()) / 86_400_000,
   );
+  const daysRemain = Math.max(0, DAYS_VALID - days);
   const tone =
-    days <= 24
+    daysRemain >= 6
       ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-      : days <= 30
+      : daysRemain >= 1
       ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
       : "bg-destructive/15 text-destructive border-destructive/30";
   return (
     <div
-      className="ml-auto flex flex-col items-end leading-tight"
-      aria-label={`${days} day${days === 1 ? "" : "s"} since last VOT check`}
-      title={days > 30 ? "Beyond 30 days — VOR cannot be used for IFR flight (14 CFR 91.171)" : undefined}
+      className="ml-auto flex items-center gap-3"
+      aria-label={`${days} day${days === 1 ? "" : "s"} since last VOT check, ${daysRemain} day${daysRemain === 1 ? "" : "s"} remaining`}
+      title={days > DAYS_VALID ? `Beyond ${DAYS_VALID} days — VOR cannot be used for IFR flight (14 CFR 91.171)` : undefined}
     >
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
-      <span className={`mt-0.5 px-2 py-0.5 rounded-full border text-sm font-semibold font-display tabular-nums ${tone}`}>
-        {days}d
-      </span>
+      <div className="flex flex-col items-end leading-tight">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Last check</span>
+        <span className={`mt-0.5 px-2 py-0.5 rounded-full border text-sm font-semibold font-display tabular-nums ${tone}`}>
+          {days}d
+        </span>
+      </div>
+      <div className="flex flex-col items-end leading-tight">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Days remain</span>
+        <span className={`mt-0.5 px-2 py-0.5 rounded-full border text-sm font-semibold font-display tabular-nums ${tone}`}>
+          {daysRemain}d
+        </span>
+      </div>
     </div>
   );
 };
